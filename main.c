@@ -43,13 +43,23 @@ int main(void) {
             case 6:
                 indice = leerEntero("Ingrese el numero de zona a editar (1-5): ", 1, MAX_ZONAS);
                 ingresarDatosZona(&zonas[indice - 1]);
+
                 guardarDatosArchivo(zonas, MAX_ZONAS, ARCHIVO_DATOS);
-                printf("Datos de la zona actualizados y guardados.\n");
+                guardarReporte(zonas, MAX_ZONAS, ARCHIVO_REPORTE);
+                guardarHistoricoCSV(zonas, MAX_ZONAS, ARCHIVO_CSV);
+
+                printf("\nDatos actualizados correctamente.\n");
+                printf("Se generaron automaticamente:\n");
+                printf("- %s\n", ARCHIVO_DATOS);
+                printf("- %s\n", ARCHIVO_REPORTE);
+                printf("- %s\n", ARCHIVO_CSV);
                 break;
 
             case 7:
                 if (guardarDatosArchivo(zonas, MAX_ZONAS, ARCHIVO_DATOS)) {
-                    printf("Datos guardados correctamente en '%s'.\n", ARCHIVO_DATOS);
+                    guardarReporte(zonas, MAX_ZONAS, ARCHIVO_REPORTE);
+                    guardarHistoricoCSV(zonas, MAX_ZONAS, ARCHIVO_CSV);
+                    printf("Datos, reporte y CSV generados correctamente.\n");
                 }
                 break;
 

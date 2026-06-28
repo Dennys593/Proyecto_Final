@@ -430,8 +430,8 @@ void mostrarMenu(void) {
     printf("| 3. Mostrar alertas preventivas                       |\n");
     printf("| 4. Mostrar promedio historico 30 dias vs limites     |\n");
     printf("| 5. Mostrar recomendaciones de mitigacion             |\n");
-    printf("| 6. Ingresar manualmente datos de una zona            |\n");
-    printf("| 7. Guardar datos del sistema                         |\n");
+    printf("| 6. Ingresar datos de zona y generar archivos auto   |\n");
+    printf("| 7. Guardar/regenerar todos los archivos             |\n");
     printf("| 8. Exportar reporte completo TXT                     |\n");
     printf("| 9. Exportar historico CSV                            |\n");
     printf("| 0. Salir                                             |\n");
