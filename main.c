@@ -12,7 +12,7 @@ int main() {
     } else {
         printf("No hay datos guardados. Ingrese datos desde la opcion 6.\n");
     }
-
+    
     do {
         mostrarMenu();
         opcion = leerEntero("Seleccione una opcion: ", 0, 6);

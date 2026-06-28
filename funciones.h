@@ -65,4 +65,5 @@ void mostrarRecomendaciones(Zona zonas[]);
 
 void generarReporte(Zona zonas[]);
 
+
 #endif
