@@ -1,64 +1,50 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include "funciones.h"
 
-void limpiarBuffer(void) {
+void limpiarBuffer() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
 
-int leerEntero(const char *mensaje, int min, int max) {
-    int valor;
-    int valido;
-
+int leerEntero(char mensaje[], int min, int max) {
+    int valor, correcto;
     do {
         printf("%s", mensaje);
-        valido = scanf("%d", &valor);
-
-        if (valido != 1 || valor < min || valor > max) {
-            printf("Error: ingrese un numero entero entre %d y %d.\n", min, max);
+        correcto = scanf("%d", &valor);
+        if (correcto != 1 || valor < min || valor > max) {
+            printf("Error. Ingrese un numero entre %d y %d.\n", min, max);
             limpiarBuffer();
         }
-    } while (valido != 1 || valor < min || valor > max);
-
+    } while (correcto != 1 || valor < min || valor > max);
     limpiarBuffer();
     return valor;
 }
 
-float leerFloat(const char *mensaje, float min, float max) {
+float leerFloat(char mensaje[], float min, float max) {
     float valor;
-    int valido;
-
+    int correcto;
     do {
         printf("%s", mensaje);
-        valido = scanf("%f", &valor);
-
-        if (valido != 1 || valor < min || valor > max) {
-            printf("Error: ingrese un valor entre %.2f y %.2f.\n", min, max);
+        correcto = scanf("%f", &valor);
+        if (correcto != 1 || valor < min || valor > max) {
+            printf("Error. Ingrese un valor entre %.2f y %.2f.\n", min, max);
             limpiarBuffer();
         }
-    } while (valido != 1 || valor < min || valor > max);
-
+    } while (correcto != 1 || valor < min || valor > max);
     limpiarBuffer();
     return valor;
 }
 
-void leerTexto(const char *mensaje, char texto[], int tam) {
-    int valido;
-    int i;
-
+void leerTexto(char mensaje[], char texto[], int tam) {
+    int valido, i;
     do {
         valido = 1;
         printf("%s", mensaje);
-
-        if (fgets(texto, tam, stdin) == NULL) {
-            valido = 0;
-        }
-
+        fgets(texto, tam, stdin);
         if (texto[0] == '\n' || texto[0] == '\0') {
-            printf("Error: el texto no puede estar vacio.\n");
+            printf("Error. El texto no puede estar vacio.\n");
             valido = 0;
         }
     } while (valido == 0);
@@ -71,567 +57,273 @@ void leerTexto(const char *mensaje, char texto[], int tam) {
     }
 }
 
-void inicializarZonas(Zona *zonas, int numZonas) {
+void inicializarZonas(Zona zonas[]) {
     int i, j;
-
-    for (i = 0; i < numZonas; i++) {
-        snprintf((zonas + i)->nombre, MAX_NOMBRE, "Zona %d", i + 1);
-        (zonas + i)->numDias = MAX_DIAS;
-        (zonas + i)->climaActual.temperatura = 0.0f;
-        (zonas + i)->climaActual.viento = 0.0f;
-        (zonas + i)->climaActual.humedad = 0.0f;
-        (zonas + i)->actual.co2 = 0.0f;
-        (zonas + i)->actual.so2 = 0.0f;
-        (zonas + i)->actual.no2 = 0.0f;
-        (zonas + i)->actual.pm25 = 0.0f;
-        (zonas + i)->prediccion.co2 = 0.0f;
-        (zonas + i)->prediccion.so2 = 0.0f;
-        (zonas + i)->prediccion.no2 = 0.0f;
-        (zonas + i)->prediccion.pm25 = 0.0f;
-
+    for (i = 0; i < MAX_ZONAS; i++) {
+        sprintf(zonas[i].nombre, "Zona_%d", i + 1);
+        zonas[i].clima.temperatura = 0;
+        zonas[i].clima.viento = 0;
+        zonas[i].clima.humedad = 0;
+        zonas[i].actual.co2 = zonas[i].actual.so2 = zonas[i].actual.no2 = zonas[i].actual.pm25 = 0;
+        zonas[i].prediccion.co2 = zonas[i].prediccion.so2 = zonas[i].prediccion.no2 = zonas[i].prediccion.pm25 = 0;
         for (j = 0; j < MAX_DIAS; j++) {
-            (zonas + i)->historico[j].co2 = 0.0f;
-            (zonas + i)->historico[j].so2 = 0.0f;
-            (zonas + i)->historico[j].no2 = 0.0f;
-            (zonas + i)->historico[j].pm25 = 0.0f;
+            zonas[i].historico[j].co2 = 0;
+            zonas[i].historico[j].so2 = 0;
+            zonas[i].historico[j].no2 = 0;
+            zonas[i].historico[j].pm25 = 0;
         }
     }
 }
 
-void cargarDatosPrueba(Zona *zonas, int numZonas) {
-    const char *nombres[MAX_ZONAS] = {
-        "Centro", "Norte_Industrial", "Sur_Residencial", "Valle_Chillos", "Aeropuerto"
-    };
-
-    int i, d;
-
-    for (i = 0; i < numZonas; i++) {
-        strncpy((zonas + i)->nombre, nombres[i % MAX_ZONAS], MAX_NOMBRE - 1);
-        (zonas + i)->nombre[MAX_NOMBRE - 1] = '\0';
-        (zonas + i)->numDias = MAX_DIAS;
-
-        for (d = 0; d < MAX_DIAS; d++) {
-            float base = (float)(i * 3);
-            (zonas + i)->historico[d].co2 = 420.0f + base * 20.0f + (float)(d % 9);
-            (zonas + i)->historico[d].so2 = 8.0f + base + (float)(d % 6);
-            (zonas + i)->historico[d].no2 = 10.0f + base + (float)(d % 7);
-            (zonas + i)->historico[d].pm25 = 7.0f + base + (float)(d % 8);
-        }
-
-        (zonas + i)->climaActual.temperatura = 20.0f + (float)(i * 2);
-        (zonas + i)->climaActual.viento = 8.0f + (float)(i * 3);
-        (zonas + i)->climaActual.humedad = 45.0f + (float)(i * 6);
-
-        calcularNivelActual(zonas + i);
-        calcularPrediccion(zonas + i);
-    }
+int cargarDatos(Zona zonas[]) {
+    FILE *archivo = fopen(ARCHIVO_DATOS, "rb");
+    if (archivo == NULL) return 0;
+    fread(zonas, sizeof(Zona), MAX_ZONAS, archivo);
+    fclose(archivo);
+    return 1;
 }
 
-int cargarDatosArchivo(Zona *zonas, int numZonas, const char *nombreArchivo) {
-    FILE *archivo = fopen(nombreArchivo, "rb");
-    int leidos;
-
+void guardarDatos(Zona zonas[]) {
+    FILE *archivo = fopen(ARCHIVO_DATOS, "wb");
     if (archivo == NULL) {
-        return 0;
+        printf("No se pudo guardar el archivo de datos.\n");
+        return;
     }
-
-    leidos = fread(zonas, sizeof(Zona), numZonas, archivo);
+    fwrite(zonas, sizeof(Zona), MAX_ZONAS, archivo);
     fclose(archivo);
-
-    return leidos == numZonas;
 }
 
-int guardarDatosArchivo(Zona *zonas, int numZonas, const char *nombreArchivo) {
-    FILE *archivo = fopen(nombreArchivo, "wb");
-    int escritos;
-
-    if (archivo == NULL) {
-        printf("Error: no se pudo abrir el archivo de datos.\n");
-        return 0;
-    }
-
-    escritos = fwrite(zonas, sizeof(Zona), numZonas, archivo);
-    fclose(archivo);
-
-    return escritos == numZonas;
+void mostrarMenu() {
+    printf("\n           SISTEMA DE CONTAMINACION DEL AIRE           \n");
+    printf("1. Monitoreo actual\n");
+    printf("2. Prediccion de contaminacion 24 horas\n");
+    printf("3. Alertas preventivas\n");
+    printf("4. Promedio historico de 30 dias\n");
+    printf("5. Recomendaciones de mitigacion\n");
+    printf("6. Ingresar o actualizar datos\n");
+    printf("0. Salir\n");
+    printf("====================================================================\n");
 }
 
 void ingresarDatosZona(Zona *zona) {
-    int d;
-
+    int i;
     leerTexto("Nombre de la zona: ", zona->nombre, MAX_NOMBRE);
 
-    zona->climaActual.temperatura = leerFloat("Temperatura actual en C: ", 0.0f, 60.0f);
-    zona->climaActual.viento = leerFloat("Velocidad del viento en km/h: ", 0.0f, 200.0f);
-    zona->climaActual.humedad = leerFloat("Humedad relativa en porcentaje: ", 0.0f, 100.0f);
+    printf("\nIngrese factores climaticos actuales:\n");
+    zona->clima.temperatura = leerFloat("Temperatura: ", 0, 60);
+    zona->clima.viento = leerFloat("Velocidad del viento: ", 0, 200);
+    zona->clima.humedad = leerFloat("Humedad: ", 0, 100);
 
-    zona->numDias = leerEntero("Cuantos dias de historico desea ingresar (1-30): ", 1, MAX_DIAS);
-
-    for (d = 0; d < zona->numDias; d++) {
-        printf("\nDia %d\n", d + 1);
-        zona->historico[d].co2 = leerFloat("CO2 ppm: ", 0.0f, 5000.0f);
-        zona->historico[d].so2 = leerFloat("SO2 ug/m3: ", 0.0f, 1000.0f);
-        zona->historico[d].no2 = leerFloat("NO2 ug/m3: ", 0.0f, 1000.0f);
-        zona->historico[d].pm25 = leerFloat("PM2.5 ug/m3: ", 0.0f, 1000.0f);
+    printf("\nIngrese datos historicos de contaminacion de los ultimos 30 dias:\n");
+    for (i = 0; i < MAX_DIAS; i++) {
+        printf("\nDia %d\n", i + 1);
+        zona->historico[i].co2 = leerFloat("CO2: ", 0, 5000);
+        zona->historico[i].so2 = leerFloat("SO2: ", 0, 1000);
+        zona->historico[i].no2 = leerFloat("NO2: ", 0, 1000);
+        zona->historico[i].pm25 = leerFloat("PM2.5: ", 0, 1000);
     }
 
-    calcularNivelActual(zona);
-    calcularPrediccion(zona);
+    calcularActual(zona);
+    predecirZona(zona);
 }
 
-void registrarNuevoDia(Zona *zona, Contaminantes nuevoDato) {
-    int j;
+void ingresarDatosSistema(Zona zonas[]) {
+    int opcion, indice, i;
+    printf("\n1. Ingresar datos de una sola zona\n");
+    printf("2. Ingresar datos de las 5 zonas\n");
+    opcion = leerEntero("Seleccione una opcion: ", 1, 2);
 
-    if (zona->numDias < MAX_DIAS) {
-        zona->historico[zona->numDias] = nuevoDato;
-        zona->numDias++;
+    if (opcion == 1) {
+        indice = leerEntero("Ingrese el numero de zona (1-5): ", 1, MAX_ZONAS);
+        ingresarDatosZona(&zonas[indice - 1]);
     } else {
-        for (j = 0; j < MAX_DIAS - 1; j++) {
-            zona->historico[j] = zona->historico[j + 1];
+        for (i = 0; i < MAX_ZONAS; i++) {
+            printf("\n========== ZONA %d ==========\n", i + 1);
+            ingresarDatosZona(&zonas[i]);
         }
-        zona->historico[MAX_DIAS - 1] = nuevoDato;
     }
 
-    calcularNivelActual(zona);
-    calcularPrediccion(zona);
+    guardarDatos(zonas);
+    generarReporte(zonas);
+    printf("\nDatos guardados correctamente.\n");
+    printf("Reporte generado automaticamente en %s\n", ARCHIVO_REPORTE);
 }
 
-void calcularNivelActual(Zona *zona) {
-    int ultimo = zona->numDias - 1;
-
-    if (ultimo < 0) {
-        return;
-    }
-
-    zona->actual = zona->historico[ultimo];
+void calcularActual(Zona *zona) {
+    zona->actual = zona->historico[MAX_DIAS - 1];
 }
 
-float calcularPromedioPonderado(float *valores, int n) {
-    float sumaPesos = 0.0f;
-    float sumaValores = 0.0f;
+float promedioPonderado(float valores[]) {
+    float suma = 0, sumaPesos = 0;
     int i;
-
-    for (i = 0; i < n; i++) {
-        float peso = (float)(i + 1);
-        sumaValores += valores[i] * peso;
+    for (i = 0; i < MAX_DIAS; i++) {
+        int peso = i + 1;
+        suma += valores[i] * peso;
         sumaPesos += peso;
     }
-
-    if (sumaPesos == 0.0f) {
-        return 0.0f;
-    }
-
-    return sumaValores / sumaPesos;
+    return suma / sumaPesos;
 }
 
-float calcularFactorClimatico(Clima *clima) {
+void predecirZona(Zona *zona) {
+    float co2[MAX_DIAS], so2[MAX_DIAS], no2[MAX_DIAS], pm25[MAX_DIAS];
     float factor = 1.0f;
-
-    factor += clima->humedad / 200.0f;
-    factor += clima->temperatura / 300.0f;
-    factor -= clima->viento / 80.0f;
-
-    if (factor < 0.5f) {
-        factor = 0.5f;
-    }
-
-    if (factor > 1.6f) {
-        factor = 1.6f;
-    }
-
-    return factor;
-}
-
-void calcularPrediccion(Zona *zona) {
-    float co2vals[MAX_DIAS];
-    float so2vals[MAX_DIAS];
-    float no2vals[MAX_DIAS];
-    float pm25vals[MAX_DIAS];
-    float factorClima;
     int i;
-    int n = zona->numDias;
 
-    if (n <= 0) {
-        return;
+    for (i = 0; i < MAX_DIAS; i++) {
+        co2[i] = zona->historico[i].co2;
+        so2[i] = zona->historico[i].so2;
+        no2[i] = zona->historico[i].no2;
+        pm25[i] = zona->historico[i].pm25;
     }
 
-    for (i = 0; i < n; i++) {
-        co2vals[i] = zona->historico[i].co2;
-        so2vals[i] = zona->historico[i].so2;
-        no2vals[i] = zona->historico[i].no2;
-        pm25vals[i] = zona->historico[i].pm25;
-    }
+    if (zona->clima.temperatura > 30) factor += 0.10f;
+    if (zona->clima.humedad > 70) factor += 0.05f;
+    if (zona->clima.viento > 20) factor -= 0.10f;
+    if (factor < 0.50f) factor = 0.50f;
 
-    factorClima = calcularFactorClimatico(&zona->climaActual);
-
-    zona->prediccion.co2 = calcularPromedioPonderado(co2vals, n) * factorClima;
-    zona->prediccion.so2 = calcularPromedioPonderado(so2vals, n) * factorClima;
-    zona->prediccion.no2 = calcularPromedioPonderado(no2vals, n) * factorClima;
-    zona->prediccion.pm25 = calcularPromedioPonderado(pm25vals, n) * factorClima;
+    zona->prediccion.co2 = promedioPonderado(co2) * factor;
+    zona->prediccion.so2 = promedioPonderado(so2) * factor;
+    zona->prediccion.no2 = promedioPonderado(no2) * factor;
+    zona->prediccion.pm25 = promedioPonderado(pm25) * factor;
 }
 
-void calcularPromedioHistorico(Zona *zona, Contaminantes *promedio) {
-    float sCo2 = 0.0f;
-    float sSo2 = 0.0f;
-    float sNo2 = 0.0f;
-    float sPm25 = 0.0f;
+void calcularPromedioHistorico(Zona *zona, Contaminacion *promedio) {
     int i;
-    int n = zona->numDias;
-
-    if (n <= 0) {
-        n = 1;
+    float co2 = 0, so2 = 0, no2 = 0, pm25 = 0;
+    for (i = 0; i < MAX_DIAS; i++) {
+        co2 += zona->historico[i].co2;
+        so2 += zona->historico[i].so2;
+        no2 += zona->historico[i].no2;
+        pm25 += zona->historico[i].pm25;
     }
-
-    for (i = 0; i < zona->numDias; i++) {
-        sCo2 += zona->historico[i].co2;
-        sSo2 += zona->historico[i].so2;
-        sNo2 += zona->historico[i].no2;
-        sPm25 += zona->historico[i].pm25;
-    }
-
-    promedio->co2 = sCo2 / n;
-    promedio->so2 = sSo2 / n;
-    promedio->no2 = sNo2 / n;
-    promedio->pm25 = sPm25 / n;
+    promedio->co2 = co2 / MAX_DIAS;
+    promedio->so2 = so2 / MAX_DIAS;
+    promedio->no2 = no2 / MAX_DIAS;
+    promedio->pm25 = pm25 / MAX_DIAS;
 }
 
-int contaminanteExcedeLimite(const char *tipo, float valor) {
-    if (strcmp(tipo, "CO2") == 0) {
-        return valor > LIMITE_CO2;
-    }
-
-    if (strcmp(tipo, "SO2") == 0) {
-        return valor > LIMITE_SO2;
-    }
-
-    if (strcmp(tipo, "NO2") == 0) {
-        return valor > LIMITE_NO2;
-    }
-
-    if (strcmp(tipo, "PM25") == 0) {
-        return valor > LIMITE_PM25;
-    }
-
+int superaLimites(Contaminacion datos) {
+    if (datos.co2 > LIMITE_CO2) return 1;
+    if (datos.so2 > LIMITE_SO2) return 1;
+    if (datos.no2 > LIMITE_NO2) return 1;
+    if (datos.pm25 > LIMITE_PM25) return 1;
     return 0;
 }
 
-int evaluarLimites(Contaminantes *c) {
-    int mascara = 0;
-
-    if (contaminanteExcedeLimite("CO2", c->co2)) {
-        mascara |= 1;
-    }
-
-    if (contaminanteExcedeLimite("SO2", c->so2)) {
-        mascara |= 2;
-    }
-
-    if (contaminanteExcedeLimite("NO2", c->no2)) {
-        mascara |= 4;
-    }
-
-    if (contaminanteExcedeLimite("PM25", c->pm25)) {
-        mascara |= 8;
-    }
-
-    return mascara;
+void generarAlerta(Zona zona, char alerta[]) {
+    if (superaLimites(zona.actual) || superaLimites(zona.prediccion))
+        strcpy(alerta, "ALERTA: niveles de contaminacion superan los limites.");
+    else
+        strcpy(alerta, "Sin alerta: niveles aceptables.");
 }
 
-void generarAlerta(Zona *zona, char *buffer, int tamBuffer) {
-    int mActual = evaluarLimites(&zona->actual);
-    int mPred = evaluarLimites(&zona->prediccion);
-
-    buffer[0] = '\0';
-
-    if (mActual == 0 && mPred == 0) {
-        snprintf(buffer, tamBuffer, "Sin alerta");
-        return;
-    }
-
-    if (mActual != 0) {
-        strncat(buffer, "Actual:", tamBuffer - strlen(buffer) - 1);
-
-        if (mActual & 1) {
-            strncat(buffer, " CO2", tamBuffer - strlen(buffer) - 1);
-        }
-
-        if (mActual & 2) {
-            strncat(buffer, " SO2", tamBuffer - strlen(buffer) - 1);
-        }
-
-        if (mActual & 4) {
-            strncat(buffer, " NO2", tamBuffer - strlen(buffer) - 1);
-        }
-
-        if (mActual & 8) {
-            strncat(buffer, " PM2.5", tamBuffer - strlen(buffer) - 1);
-        }
-    }
-
-    if (mPred != 0) {
-        if (strlen(buffer) > 0) {
-            strncat(buffer, " | ", tamBuffer - strlen(buffer) - 1);
-        }
-
-        strncat(buffer, "Prevista:", tamBuffer - strlen(buffer) - 1);
-
-        if (mPred & 1) {
-            strncat(buffer, " CO2", tamBuffer - strlen(buffer) - 1);
-        }
-
-        if (mPred & 2) {
-            strncat(buffer, " SO2", tamBuffer - strlen(buffer) - 1);
-        }
-
-        if (mPred & 4) {
-            strncat(buffer, " NO2", tamBuffer - strlen(buffer) - 1);
-        }
-
-        if (mPred & 8) {
-            strncat(buffer, " PM2.5", tamBuffer - strlen(buffer) - 1);
-        }
-    }
+void generarRecomendacion(Zona zona, char recomendacion[]) {
+    if (superaLimites(zona.actual) || superaLimites(zona.prediccion))
+        strcpy(recomendacion, "Reducir trafico, controlar industrias y evitar actividades al aire libre.");
+    else
+        strcpy(recomendacion, "Mantener monitoreo y medidas actuales.");
 }
 
-void generarRecomendaciones(Zona *zona, char *buffer, int tamBuffer) {
-    int mascara = evaluarLimites(&zona->actual) | evaluarLimites(&zona->prediccion);
-
-    buffer[0] = '\0';
-
-    if (mascara == 0) {
-        snprintf(buffer, tamBuffer, "Mantener monitoreo regular.");
-        return;
-    }
-
-    if (mascara & 1) {
-        strncat(buffer, "Reducir trafico. ", tamBuffer - strlen(buffer) - 1);
-    }
-
-    if (mascara & 2) {
-        strncat(buffer, "Controlar industrias. ", tamBuffer - strlen(buffer) - 1);
-    }
-
-    if (mascara & 4) {
-        strncat(buffer, "Restringir horas pico. ", tamBuffer - strlen(buffer) - 1);
-    }
-
-    if (mascara & 8) {
-        strncat(buffer, "Evitar aire libre. ", tamBuffer - strlen(buffer) - 1);
-    }
-}
-
-void mostrarMenu(void) {
-    printf("\n");
-    printf("+------------------------------------------------------+\n");
-    printf("|   SIGPCA - SISTEMA DE CONTAMINACION DEL AIRE         |\n");
-    printf("+------------------------------------------------------+\n");
-    printf("| 1. Mostrar monitoreo actual en tabla                 |\n");
-    printf("| 2. Mostrar prediccion de contaminacion 24h           |\n");
-    printf("| 3. Mostrar alertas preventivas                       |\n");
-    printf("| 4. Mostrar promedio historico 30 dias vs limites     |\n");
-    printf("| 5. Mostrar recomendaciones de mitigacion             |\n");
-    printf("| 6. Ingresar datos de zona y generar archivos auto   |\n");
-    printf("| 7. Guardar/regenerar todos los archivos             |\n");
-    printf("| 8. Exportar reporte completo TXT                     |\n");
-    printf("| 9. Exportar historico CSV                            |\n");
-    printf("| 0. Salir                                             |\n");
-    printf("+------------------------------------------------------+\n");
-}
-
-void mostrarLineaTabla(void) {
-    printf("+----+--------------------+----------+----------+----------+----------+----------+----------+----------+\n");
-}
-
-void mostrarTodasZonasTabla(Zona *zonas, int numZonas) {
+void mostrarMonitoreoActual(Zona zonas[]) {
     int i;
-
-    mostrarLineaTabla();
-    printf("| ID | Zona               | CO2      | SO2      | NO2      | PM2.5    | Temp C   | Viento   | Humedad  |\n");
-    mostrarLineaTabla();
-
-    for (i = 0; i < numZonas; i++) {
-        calcularNivelActual(zonas + i);
-        printf("| %-2d | %-18s | %-8.2f | %-8.2f | %-8.2f | %-8.2f | %-8.2f | %-8.2f | %-8.2f |\n",
-               i + 1,
-               (zonas + i)->nombre,
-               (zonas + i)->actual.co2,
-               (zonas + i)->actual.so2,
-               (zonas + i)->actual.no2,
-               (zonas + i)->actual.pm25,
-               (zonas + i)->climaActual.temperatura,
-               (zonas + i)->climaActual.viento,
-               (zonas + i)->climaActual.humedad);
-    }
-
-    mostrarLineaTabla();
-}
-
-void mostrarPrediccionesTabla(Zona *zonas, int numZonas) {
-    int i;
-
-    mostrarLineaTabla();
-    printf("| ID | Zona               | CO2      | SO2      | NO2      | PM2.5    | Temp C   | Viento   | Humedad  |\n");
-    mostrarLineaTabla();
-
-    for (i = 0; i < numZonas; i++) {
-        calcularPrediccion(zonas + i);
-        printf("| %-2d | %-18s | %-8.2f | %-8.2f | %-8.2f | %-8.2f | %-8.2f | %-8.2f | %-8.2f |\n",
-               i + 1,
-               (zonas + i)->nombre,
-               (zonas + i)->prediccion.co2,
-               (zonas + i)->prediccion.so2,
-               (zonas + i)->prediccion.no2,
-               (zonas + i)->prediccion.pm25,
-               (zonas + i)->climaActual.temperatura,
-               (zonas + i)->climaActual.viento,
-               (zonas + i)->climaActual.humedad);
-    }
-
-    mostrarLineaTabla();
-}
-
-void mostrarPromediosTabla(Zona *zonas, int numZonas) {
-    int i;
-    Contaminantes prom;
-
-    printf("+----+--------------------+----------+----------+----------+----------+\n");
+    printf("\n+----+--------------------+----------+----------+----------+----------+\n");
     printf("| ID | Zona               | CO2      | SO2      | NO2      | PM2.5    |\n");
     printf("+----+--------------------+----------+----------+----------+----------+\n");
-
-    for (i = 0; i < numZonas; i++) {
-        calcularPromedioHistorico(zonas + i, &prom);
-
+    for (i = 0; i < MAX_ZONAS; i++) {
+        calcularActual(&zonas[i]);
         printf("| %-2d | %-18s | %-8.2f | %-8.2f | %-8.2f | %-8.2f |\n",
-               i + 1,
-               (zonas + i)->nombre,
-               prom.co2,
-               prom.so2,
-               prom.no2,
-               prom.pm25);
+               i + 1, zonas[i].nombre, zonas[i].actual.co2, zonas[i].actual.so2,
+               zonas[i].actual.no2, zonas[i].actual.pm25);
     }
-
     printf("+----+--------------------+----------+----------+----------+----------+\n");
-    printf("| Limites usados: CO2 %.0f | SO2 %.0f | NO2 %.0f | PM2.5 %.0f |\n",
-           LIMITE_CO2, LIMITE_SO2, LIMITE_NO2, LIMITE_PM25);
 }
 
-void mostrarAlertasTabla(Zona *zonas, int numZonas) {
+void mostrarPredicciones(Zona zonas[]) {
     int i;
-    char alerta[MAX_LINEA];
+    printf("\n+----+--------------------+----------+----------+----------+----------+\n");
+    printf("| ID | Zona               | CO2      | SO2      | NO2      | PM2.5    |\n");
+    printf("+----+--------------------+----------+----------+----------+----------+\n");
+    for (i = 0; i < MAX_ZONAS; i++) {
+        predecirZona(&zonas[i]);
+        printf("| %-2d | %-18s | %-8.2f | %-8.2f | %-8.2f | %-8.2f |\n",
+               i + 1, zonas[i].nombre, zonas[i].prediccion.co2, zonas[i].prediccion.so2,
+               zonas[i].prediccion.no2, zonas[i].prediccion.pm25);
+    }
+    printf("+----+--------------------+----------+----------+----------+----------+\n");
+}
 
-    printf("+----+--------------------+------------------------------------------------+\n");
+void mostrarAlertas(Zona zonas[]) {
+    int i;
+    char alerta[MAX_TEXTO];
+    printf("\n+----+--------------------+------------------------------------------------+\n");
     printf("| ID | Zona               | Alerta                                         |\n");
     printf("+----+--------------------+------------------------------------------------+\n");
-
-    for (i = 0; i < numZonas; i++) {
-        calcularNivelActual(zonas + i);
-        calcularPrediccion(zonas + i);
-        generarAlerta(zonas + i, alerta, MAX_LINEA);
-
-        printf("| %-2d | %-18s | %-46s |\n", i + 1, (zonas + i)->nombre, alerta);
+    for (i = 0; i < MAX_ZONAS; i++) {
+        generarAlerta(zonas[i], alerta);
+        printf("| %-2d | %-18s | %-46s |\n", i + 1, zonas[i].nombre, alerta);
     }
-
     printf("+----+--------------------+------------------------------------------------+\n");
 }
 
-void mostrarRecomendacionesTabla(Zona *zonas, int numZonas) {
+void mostrarPromedios(Zona zonas[]) {
     int i;
-    char recomendacion[MAX_LINEA];
+    Contaminacion promedio;
+    printf("\n+----+--------------------+----------+----------+----------+----------+\n");
+    printf("| ID | Zona               | CO2      | SO2      | NO2      | PM2.5    |\n");
+    printf("+----+--------------------+----------+----------+----------+----------+\n");
+    for (i = 0; i < MAX_ZONAS; i++) {
+        calcularPromedioHistorico(&zonas[i], &promedio);
+        printf("| %-2d | %-18s | %-8.2f | %-8.2f | %-8.2f | %-8.2f |\n",
+               i + 1, zonas[i].nombre, promedio.co2, promedio.so2, promedio.no2, promedio.pm25);
+    }
+    printf("+----+--------------------+----------+----------+----------+----------+\n");
+}
 
-    printf("+----+--------------------+------------------------------------------------+\n");
+void mostrarRecomendaciones(Zona zonas[]) {
+    int i;
+    char recomendacion[MAX_TEXTO];
+    printf("\n+----+--------------------+------------------------------------------------+\n");
     printf("| ID | Zona               | Recomendacion                                  |\n");
     printf("+----+--------------------+------------------------------------------------+\n");
-
-    for (i = 0; i < numZonas; i++) {
-        calcularNivelActual(zonas + i);
-        calcularPrediccion(zonas + i);
-        generarRecomendaciones(zonas + i, recomendacion, MAX_LINEA);
-
-        printf("| %-2d | %-18s | %-46s |\n", i + 1, (zonas + i)->nombre, recomendacion);
+    for (i = 0; i < MAX_ZONAS; i++) {
+        generarRecomendacion(zonas[i], recomendacion);
+        printf("| %-2d | %-18s | %-46s |\n", i + 1, zonas[i].nombre, recomendacion);
     }
-
     printf("+----+--------------------+------------------------------------------------+\n");
 }
 
-void guardarReporte(Zona *zonas, int numZonas, const char *nombreArchivo) {
-    FILE *archivo;
+void generarReporte(Zona zonas[]) {
+    FILE *archivo = fopen(ARCHIVO_REPORTE, "w");
     int i;
-    char alerta[MAX_LINEA];
-    char recomendacion[MAX_LINEA];
-    Contaminantes promedio;
-    time_t ahora = time(NULL);
-
-    archivo = fopen(nombreArchivo, "w");
+    char alerta[MAX_TEXTO], recomendacion[MAX_TEXTO];
+    Contaminacion promedio;
 
     if (archivo == NULL) {
-        printf("Error: no se pudo crear el archivo de reporte.\n");
+        printf("No se pudo crear el reporte.\n");
         return;
     }
 
-    fprintf(archivo, "REPORTE DE CALIDAD DEL AIRE\n");
-    fprintf(archivo, "Fecha de generacion: %s", ctime(&ahora));
-    fprintf(archivo, "============================================================\n\n");
+    fprintf(archivo, "REPORTE DE CONTAMINACION DEL AIRE\n");
+    fprintf(archivo, "=================================\n\n");
 
-    fprintf(archivo, "%-3s %-18s %-9s %-9s %-9s %-9s %-9s\n",
-            "ID", "Zona", "CO2", "SO2", "NO2", "PM2.5", "PredPM25");
+    for (i = 0; i < MAX_ZONAS; i++) {
+        calcularActual(&zonas[i]);
+        predecirZona(&zonas[i]);
+        calcularPromedioHistorico(&zonas[i], &promedio);
+        generarAlerta(zonas[i], alerta);
+        generarRecomendacion(zonas[i], recomendacion);
 
-    for (i = 0; i < numZonas; i++) {
-        Zona *z = zonas + i;
-
-        calcularNivelActual(z);
-        calcularPrediccion(z);
-        calcularPromedioHistorico(z, &promedio);
-        generarAlerta(z, alerta, MAX_LINEA);
-        generarRecomendaciones(z, recomendacion, MAX_LINEA);
-
-        fprintf(archivo, "%-3d %-18s %-9.2f %-9.2f %-9.2f %-9.2f %-9.2f\n",
-                i + 1,
-                z->nombre,
-                z->actual.co2,
-                z->actual.so2,
-                z->actual.no2,
-                z->actual.pm25,
-                z->prediccion.pm25);
-
-        fprintf(archivo, "Promedio: CO2 %.2f | SO2 %.2f | NO2 %.2f | PM2.5 %.2f\n",
+        fprintf(archivo, "Zona %d: %s\n", i + 1, zonas[i].nombre);
+        fprintf(archivo, "Actual -> CO2: %.2f | SO2: %.2f | NO2: %.2f | PM2.5: %.2f\n",
+                zonas[i].actual.co2, zonas[i].actual.so2, zonas[i].actual.no2, zonas[i].actual.pm25);
+        fprintf(archivo, "Prediccion 24h -> CO2: %.2f | SO2: %.2f | NO2: %.2f | PM2.5: %.2f\n",
+                zonas[i].prediccion.co2, zonas[i].prediccion.so2, zonas[i].prediccion.no2, zonas[i].prediccion.pm25);
+        fprintf(archivo, "Promedio historico -> CO2: %.2f | SO2: %.2f | NO2: %.2f | PM2.5: %.2f\n",
                 promedio.co2, promedio.so2, promedio.no2, promedio.pm25);
-
-        fprintf(archivo, "Alerta: %s\n", alerta);
+        fprintf(archivo, "%s\n", alerta);
         fprintf(archivo, "Recomendacion: %s\n", recomendacion);
-        fprintf(archivo, "------------------------------------------------------------\n");
+        fprintf(archivo, "---------------------------------\n\n");
     }
 
     fclose(archivo);
-    printf("Reporte generado correctamente en '%s'\n", nombreArchivo);
-}
-
-void guardarHistoricoCSV(Zona *zonas, int numZonas, const char *nombreArchivo) {
-    FILE *archivo;
-    int i, d;
-
-    archivo = fopen(nombreArchivo, "w");
-
-    if (archivo == NULL) {
-        printf("Error: no se pudo crear el archivo CSV.\n");
-        return;
-    }
-
-    fprintf(archivo, "Zona,Dia,CO2,SO2,NO2,PM2.5\n");
-
-    for (i = 0; i < numZonas; i++) {
-        Zona *z = zonas + i;
-
-        for (d = 0; d < z->numDias; d++) {
-            fprintf(archivo, "%s,%d,%.2f,%.2f,%.2f,%.2f\n",
-                    z->nombre,
-                    d + 1,
-                    z->historico[d].co2,
-                    z->historico[d].so2,
-                    z->historico[d].no2,
-                    z->historico[d].pm25);
-        }
-    }
-
-    fclose(archivo);
-    printf("Historico exportado correctamente en '%s'\n", nombreArchivo);
 }
