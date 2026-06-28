@@ -3,90 +3,72 @@
 
 int main(void) {
     Zona zonas[MAX_ZONAS];
-    int numZonas = MAX_ZONAS;
     int opcion;
-    int i;
-    char alerta[MAX_LINEA];
-    char recomendacion[MAX_LINEA];
+    int indice;
 
-    inicializarZonas(zonas, numZonas);
-    cargarDatosPrueba(zonas, numZonas); 
+    inicializarZonas(zonas, MAX_ZONAS);
 
-    for (i = 0; i < numZonas; i++) {
-        calcularNivelActual(&zonas[i]);
-        calcularPrediccion(&zonas[i]);
+    if (cargarDatosArchivo(zonas, MAX_ZONAS, ARCHIVO_DATOS)) {
+        printf("Datos cargados desde archivo correctamente.\n");
+    } else {
+        printf("No existe archivo de datos. Se cargaran datos de prueba.\n");
+        cargarDatosPrueba(zonas, MAX_ZONAS);
     }
 
     do {
         mostrarMenu();
-        scanf("%d", &opcion);
+        opcion = leerEntero("Seleccione una opcion: ", 0, 9);
 
         switch (opcion) {
-
             case 1:
-                mostrarTodasZonas(zonas, numZonas);
+                mostrarTodasZonasTabla(zonas, MAX_ZONAS);
                 break;
 
             case 2:
-                for (i = 0; i < numZonas; i++) {
-                    calcularPrediccion(&zonas[i]);
-                    mostrarPrediccion(&zonas[i]);
-                }
+                mostrarPrediccionesTabla(zonas, MAX_ZONAS);
                 break;
 
             case 3:
-                for (i = 0; i < numZonas; i++) {
-                    calcularNivelActual(&zonas[i]);
-                    calcularPrediccion(&zonas[i]);
-                    generarAlerta(&zonas[i], alerta, MAX_LINEA);
-                    printf("\n%s\n", alerta);
-                }
+                mostrarAlertasTabla(zonas, MAX_ZONAS);
                 break;
 
             case 4:
-                for (i = 0; i < numZonas; i++) {
-                    mostrarPromedioHistorico(&zonas[i]);
-                }
+                mostrarPromediosTabla(zonas, MAX_ZONAS);
                 break;
 
             case 5:
-                for (i = 0; i < numZonas; i++) {
-                    calcularNivelActual(&zonas[i]);
-                    calcularPrediccion(&zonas[i]);
-                    generarRecomendaciones(&zonas[i], recomendacion, MAX_LINEA);
-                    printf("\nZona: %s\nRecomendacion: %s\n", zonas[i].nombre, recomendacion);
-                }
+                mostrarRecomendacionesTabla(zonas, MAX_ZONAS);
                 break;
 
-            case 6: {
-                int idx;
-                printf("Ingrese el numero de zona a editar (1-%d): ", numZonas);
-                scanf("%d", &idx);
-                if (idx >= 1 && idx <= numZonas) {
-                    ingresarDatosZona(&zonas[idx - 1]);
-                    calcularNivelActual(&zonas[idx - 1]);
-                    calcularPrediccion(&zonas[idx - 1]);
-                    printf("Datos actualizados correctamente.\n");
-                } else {
-                    printf("Numero de zona invalido.\n");
-                }
+            case 6:
+                indice = leerEntero("Ingrese el numero de zona a editar (1-5): ", 1, MAX_ZONAS);
+                ingresarDatosZona(&zonas[indice - 1]);
+                guardarDatosArchivo(zonas, MAX_ZONAS, ARCHIVO_DATOS);
+                printf("Datos de la zona actualizados y guardados.\n");
                 break;
-            }
 
             case 7:
-                guardarReporte(zonas, numZonas, "reporte_contaminacion.txt");
+                if (guardarDatosArchivo(zonas, MAX_ZONAS, ARCHIVO_DATOS)) {
+                    printf("Datos guardados correctamente en '%s'.\n", ARCHIVO_DATOS);
+                }
                 break;
 
             case 8:
-                guardarHistoricoCSV(zonas, numZonas, "historico_contaminacion.csv");
+                guardarReporte(zonas, MAX_ZONAS, ARCHIVO_REPORTE);
+                break;
+
+            case 9:
+                guardarHistoricoCSV(zonas, MAX_ZONAS, ARCHIVO_CSV);
                 break;
 
             case 0:
+                guardarDatosArchivo(zonas, MAX_ZONAS, ARCHIVO_DATOS);
                 printf("Saliendo del sistema...\n");
                 break;
 
             default:
-                printf("Opcion invalida, intente nuevamente.\n");
+                printf("Opcion invalida.\n");
+                break;
         }
 
     } while (opcion != 0);
