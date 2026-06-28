@@ -299,31 +299,32 @@ void generarReporte(Zona zonas[]) {
     Contaminacion promedio;
 
     if (archivo == NULL) {
-        printf("No se pudo crear el reporte.\n");
+        printf("No se pudo crear el reporte.");
         return;
     }
 
-    fprintf(archivo, "REPORTE DE CONTAMINACION DEL AIRE\n");
-    fprintf(archivo, "=================================\n\n");
+    fprintf(archivo,"====================================================================================================");
+    fprintf(archivo,"                           REPORTE DE CONTAMINACION DEL AIRE");
+    fprintf(archivo,"====================================================================================================");
 
-    for (i = 0; i < MAX_ZONAS; i++) {
+    for(i=0;i<MAX_ZONAS;i++){
         calcularActual(&zonas[i]);
         predecirZona(&zonas[i]);
-        calcularPromedioHistorico(&zonas[i], &promedio);
-        generarAlerta(zonas[i], alerta);
-        generarRecomendacion(zonas[i], recomendacion);
+        calcularPromedioHistorico(&zonas[i],&promedio);
+        generarAlerta(zonas[i],alerta);
+        generarRecomendacion(zonas[i],recomendacion);
 
-        fprintf(archivo, "Zona %d: %s\n", i + 1, zonas[i].nombre);
-        fprintf(archivo, "Actual -> CO2: %.2f | SO2: %.2f | NO2: %.2f | PM2.5: %.2f\n",
-                zonas[i].actual.co2, zonas[i].actual.so2, zonas[i].actual.no2, zonas[i].actual.pm25);
-        fprintf(archivo, "Prediccion 24h -> CO2: %.2f | SO2: %.2f | NO2: %.2f | PM2.5: %.2f\n",
-                zonas[i].prediccion.co2, zonas[i].prediccion.so2, zonas[i].prediccion.no2, zonas[i].prediccion.pm25);
-        fprintf(archivo, "Promedio historico -> CO2: %.2f | SO2: %.2f | NO2: %.2f | PM2.5: %.2f\n",
-                promedio.co2, promedio.so2, promedio.no2, promedio.pm25);
-        fprintf(archivo, "%s\n", alerta);
-        fprintf(archivo, "Recomendacion: %s\n", recomendacion);
-        fprintf(archivo, "---------------------------------\n\n");
+        fprintf(archivo,"ZONA %d: %s",i+1,zonas[i].nombre);
+        fprintf(archivo,"+----------------------+------------+------------+------------+------------+");
+        fprintf(archivo,"| Indicador            |    CO2     |    SO2     |    NO2     |   PM2.5    |");
+        fprintf(archivo,"+----------------------+------------+------------+------------+------------+");
+        fprintf(archivo,"| Nivel actual         | %10.2f | %10.2f | %10.2f | %10.2f |",zonas[i].actual.co2,zonas[i].actual.so2,zonas[i].actual.no2,zonas[i].actual.pm25);
+        fprintf(archivo,"| Prediccion (24 h)    | %10.2f | %10.2f | %10.2f | %10.2f |",zonas[i].prediccion.co2,zonas[i].prediccion.so2,zonas[i].prediccion.no2,zonas[i].prediccion.pm25);
+        fprintf(archivo,"| Promedio historico   | %10.2f | %10.2f | %10.2f | %10.2f |",promedio.co2,promedio.so2,promedio.no2,promedio.pm25);
+        fprintf(archivo,"+----------------------+------------+------------+------------+------------+");
+        fprintf(archivo,"Estado:%s",alerta);
+        fprintf(archivo,"Recomendacion:%s",recomendacion);
+        fprintf(archivo,"----------------------------------------------------------------------------------------------------");
     }
-
     fclose(archivo);
 }
